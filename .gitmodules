@@ -1,0 +1,4 @@
+[submodule "TMFrontend"]
+	path = TMFrontend
+	url = https://github.com/alexx-stepan/TMFrontend.git
+	branch = development
