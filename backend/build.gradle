@@ -1,8 +1,9 @@
 plugins {
     id 'java'
+    id 'java-library'
     id 'application'
-    id 'org.springframework.boot' version '2.1.9.RELEASE'
     id 'com.bmuschko.docker-remote-api' version '4.6.2'
+    id 'org.springframework.boot' version '2.1.9.RELEASE'
 }
 
 apply plugin: 'io.spring.dependency-management'
@@ -19,158 +20,61 @@ repositories {
 }
 
 dependencies {
-    compile 'org.springframework.boot:spring-boot-starter-web'
-    compile 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
-    compile 'org.postgresql:postgresql'
+    implementation 'org.postgresql:postgresql'
 
-//    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
-    compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
+    implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
+
+//    compile group: 'javax.annotation', name: 'javax.annotation-api', version: '1.3.2'
 }
+
+import com.bmuschko.gradle.docker.tasks.image.*
 
 /**
- * DOCKER: COMMONS
+ * DOCKER
  */
 
-import com.bmuschko.gradle.docker.tasks.image.Dockerfile
-import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
-import com.bmuschko.gradle.docker.tasks.image.DockerRemoveImage
-import com.bmuschko.gradle.docker.tasks.container.DockerRemoveContainer
-import com.bmuschko.gradle.docker.tasks.container.DockerStopContainer
-import com.bmuschko.gradle.docker.tasks.container.DockerCreateContainer
-import com.bmuschko.gradle.docker.tasks.container.DockerStartContainer
-import com.bmuschko.gradle.docker.tasks.network.DockerCreateNetwork
-
-static boolean throwException(Throwable exception) {
-    return (exception.message != null 
-            && !exception.class.simpleName.contains('NotModifiedException') 
-            && !exception.class.simpleName.contains('NotFoundException'))
-}
-
-/**
- * DOCKER: DATABASE
- */
-
-def postgresHostDir = '/tmp/tm_database'
-def postgresDockerDir = '/var/lib/postgresql/data'
-def dbContainerName = 'tm_database'
-def dbNetworkName = 'tm_network'
-
-task createNetwork(type: DockerCreateNetwork) {
-    networkId = "$dbNetworkName".toString()
-}
-
-task stopDbContainer(type: DockerStopContainer) {
-    targetContainerId("$dbContainerName")
-    onError { exception ->
-        if (throwException(exception)) {
-            throw new RuntimeException(exception)
-        }
-    }
-}
-
-task removeDbContainer(type: DockerRemoveContainer) {
-    dependsOn stopDbContainer
-    targetContainerId("$dbContainerName")
-    onError { exception ->
-        if (throwException(exception)) {
-            throw new RuntimeException(exception)
-        }
-    }
-}
-
-task createDbContainer(type: DockerCreateContainer) {
-    dependsOn removeDbContainer
-    targetImageId "postgres"
-    containerName = "$dbContainerName".toString()
-    volumes = ["$postgresHostDir:$postgresDockerDir"]
-    network = "$dbNetworkName".toString()
-    networkAliases = ["tm_database"] // name of the host with database (referenced in application.properties)
-    onError { exception ->
-        if (throwException(exception)) {
-            throw new RuntimeException(exception)
-        }
-    }
-}
-
-task startDbContainer(type: DockerStartContainer) {
-    dependsOn createDbContainer, createNetwork
-    targetContainerId("$dbContainerName")
-}
-
-/**
- * DOCKER: TASK_MANAGEMENT
- */
-
-def tmContainerName = 'task_management'
-def dockerBuildDir = 'build/docker/'
-def imageVersion = '1.0'
-def tmImageName = "alexxstepan/gradle_docker_plugin:$imageVersion"
+def dockerBuildDir = 'docker/web'
 
 task syncJar(type: Copy) {
     dependsOn assemble
     from jar.archivePath
-    into dockerBuildDir
-}
-
-task stopContainer(type: DockerStopContainer) {
-    targetContainerId("$tmContainerName")
-    onError { exception ->
-        if (throwException(exception)) {
-            throw new RuntimeException(exception)
-        }
-    }
-}
-
-task removeContainer(type: DockerRemoveContainer) {
-    dependsOn stopContainer
-    targetContainerId("$tmContainerName")
-    onError { exception ->
-        if (throwException(exception)) {
-            throw new RuntimeException(exception)
-        }
-    }
-}
-
-task removeImage(type: DockerRemoveImage) {
-    dependsOn removeContainer
-    targetImageId("$tmImageName")
-    onError { exception ->
-        if (throwException(exception)) {
-            throw new RuntimeException(exception)
-        }
-    }
-}
-
-task buildImage(type: DockerBuildImage) {
-    dependsOn removeImage, syncJar
-    inputDir = project.file("$dockerBuildDir")
-    tags = ["$tmImageName"]
-}
-
-task createContainer(type: DockerCreateContainer) {
-    dependsOn buildImage//, removeContainer
-    targetImageId buildImage.getImageId()
-    containerName = "$tmContainerName".toString()
-    portBindings = ['8080:8080']
-    network = "$dbNetworkName".toString()
-    networkAliases = ["web_host"]
-}
-
-task startContainer(type: DockerStartContainer) {
-    dependsOn createContainer, startDbContainer
-    targetContainerId("$tmContainerName")
+    into rootProject.file("$dockerBuildDir")
 }
 
 task createDockerFile(type: Dockerfile) {
-    destFile = project.file("$dockerBuildDir/Dockerfile")
+    dependsOn syncJar
+    destFile = rootProject.file("$dockerBuildDir/Dockerfile")
     from 'openjdk:8-jre-alpine'
     copyFile jar.archiveName, '/app/taskmanagement.jar'
     entryPoint 'java'
     defaultCommand '-jar', '/app/taskmanagement.jar'
     exposePort 8080
-    runCommand 'apk --update --no-cache add curl'
-    instruction 'HEALTHCHECK CMD curl -f http://localhost:8080/employees/all || exit 1'
 }
 
-//bootDistZip.finalizedBy(createDockerFile)
+task removeWebDockerfile() {
+    delete rootProject.fileTree("$dockerBuildDir/")
+}
+
+task runCompose(type:Exec) {
+    workingDir rootProject.file("docker")
+    commandLine 'docker-compose', 'up', '--build', '-d'
+}
+
+task runApp() {
+    dependsOn bootDistZip
+
+    finalizedBy(runCompose)
+}
+
+task stopApp(type:Exec) {
+    workingDir rootProject.file("docker")
+    commandLine 'docker-compose', 'down'
+}
+
+clean.finalizedBy(removeWebDockerfile)
+
+bootDistZip.finalizedBy(createDockerFile)

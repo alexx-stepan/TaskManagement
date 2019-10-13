@@ -1,0 +1,26 @@
+version: '3.5'
+services:
+  db:
+    container_name: tm_database
+    build:
+      context: db
+      dockerfile: Dockerfile
+    ports:
+      - 5432:5432
+#    networks:
+#      - tm_network
+  web:
+    container_name: tm_web
+    build:
+      context: web
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
+    depends_on:
+      - db
+#    networks:
+#      - tm_network
+#networks:
+#  tm_network:
+#    name: 'tm_network'
+#    driver: bridge

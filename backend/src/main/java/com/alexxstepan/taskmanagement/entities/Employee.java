@@ -3,7 +3,7 @@ package com.alexxstepan.taskmanagement.entities;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "EMPLOYEES")
+@Table(schema = "tm", name = "EMPLOYEES")
 public class Employee extends BaseEntity {
 
 	private String firstName;
@@ -35,4 +35,22 @@ public class Employee extends BaseEntity {
 	public String getPhone() {
 		return phone;
 	}
+
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
+
+
 }
