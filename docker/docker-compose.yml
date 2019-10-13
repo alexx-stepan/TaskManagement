@@ -18,6 +18,7 @@ services:
       - 8080:8080
     depends_on:
       - db
+    command: bash -c "sleep 5"
 #    networks:
 #      - tm_network
 #networks:

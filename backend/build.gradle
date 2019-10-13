@@ -49,14 +49,18 @@ task createDockerFile(type: Dockerfile) {
     dependsOn syncJar
     destFile = rootProject.file("$dockerBuildDir/Dockerfile")
     from 'openjdk:8-jre-alpine'
+
+    copyFile 'entrypoint.sh', '/usr/bin/entrypoint.sh'
+    runCommand('''sh -c 'chmod +x /usr/bin/entrypoint.sh' ''')
     copyFile jar.archiveName, '/app/taskmanagement.jar'
-    entryPoint 'java'
-    defaultCommand '-jar', '/app/taskmanagement.jar'
+    entryPoint 'sh', '/usr/bin/entrypoint.sh' // 'sh' is to avoid 'no such file found'
+
     exposePort 8080
 }
 
-task removeWebDockerfile() {
-    delete rootProject.fileTree("$dockerBuildDir/")
+task cleanUpWebDir() {
+    delete rootProject.file("$dockerBuildDir/$jar.archiveName")
+    delete rootProject.file("$dockerBuildDir/Dockerfile")
 }
 
 task runCompose(type:Exec) {
@@ -75,6 +79,6 @@ task stopApp(type:Exec) {
     commandLine 'docker-compose', 'down'
 }
 
-clean.finalizedBy(removeWebDockerfile)
+clean.finalizedBy(cleanUpWebDir)
 
 bootDistZip.finalizedBy(createDockerFile)
