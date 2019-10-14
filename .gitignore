@@ -1,4 +1,5 @@
 .idea/
 *.log
 *.iml
-docker/web/
+docker/web/*.jar
+docker/web/Dockerfile
