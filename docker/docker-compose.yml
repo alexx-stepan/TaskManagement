@@ -7,21 +7,17 @@ services:
       dockerfile: Dockerfile
     ports:
       - 5432:5432
-#    networks:
-#      - tm_network
+  server:
+    container_name: tm_server
+    build:
+      context: server
+      dockerfile: Dockerfile
+    depends_on:
+      - db
   web:
     container_name: tm_web
     build:
-      context: web
+      context: ../TMFrontend
       dockerfile: Dockerfile
     ports:
-      - 8080:8080
-    depends_on:
-      - db
-    command: bash -c "sleep 5"
-#    networks:
-#      - tm_network
-#networks:
-#  tm_network:
-#    name: 'tm_network'
-#    driver: bridge
+      - 8080:4200
