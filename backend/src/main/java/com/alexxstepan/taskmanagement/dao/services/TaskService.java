@@ -18,4 +18,12 @@ public class TaskService {
 	public List<Task> listTasks() {
 		return IterableUtils.toList(taskRepository.findAll());
 	}
+
+	public Task getById(long id) {
+		return taskRepository.findById(id).orElse(null);
+	}
+
+	public void save(Task task) {
+		taskRepository.save(task);
+	}
 }
