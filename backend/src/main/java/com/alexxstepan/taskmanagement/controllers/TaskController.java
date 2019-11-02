@@ -21,7 +21,7 @@ public class TaskController {
 
 	@RequestMapping("/{id}")
 	public Task get(@PathVariable long id) {
-		return taskService.getById(8);
+		return taskService.getById(id);
 	}
 
 	@RequestMapping(method = RequestMethod.PUT)
