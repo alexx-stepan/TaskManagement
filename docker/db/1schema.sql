@@ -8,27 +8,24 @@ CREATE TABLE IF NOT EXISTS tm.EMPLOYEES (
     phone varchar(15) not null
 );
 
-CREATE TABLE IF NOT EXISTS tm.TASK_STATUSES (
-    id serial PRIMARY KEY,
-    description varchar(20)
-);
+CREATE TYPE tm.TASK_STATUS as ENUM ('New', 'In progress', 'Resolved', 'Closed', 'Re-opened');
+
+CREATE TYPE tm.PRIORITY as ENUM ('Low', 'Medium', 'High', 'Immediate', 'Urgent');
 
 CREATE TABLE IF NOT EXISTS tm.TASKS (
     id serial PRIMARY KEY,
     parent_task_id int,
-    performer_id int NOT NULL,
-    status_id int NOT NULL ,
-    description varchar(100),
+    assignee_id int NOT NULL,
+    status tm.TASK_STATUS NOT NULL,
+    title varchar(100),
+    description varchar(300),
+    priority tm.PRIORITY NOT NULL,
 
     CONSTRAINT FK_parent_task FOREIGN KEY (parent_task_id) REFERENCES tm.TASKS (id)
         ON DELETE RESTRICT
         ON UPDATE CASCADE,
 
-    CONSTRAINT FK_performer FOREIGN KEY (performer_id) REFERENCES tm.EMPLOYEES (id)
+    CONSTRAINT FK_assignee FOREIGN KEY (assignee_id) REFERENCES tm.EMPLOYEES (id)
         ON DELETE RESTRICT
-        ON UPDATE CASCADE,
-
-    CONSTRAINT FK_task_status FOREIGN KEY (status_id) REFERENCES tm.TASK_STATUSES (id)
-    	ON DELETE RESTRICT
         ON UPDATE CASCADE
 );
