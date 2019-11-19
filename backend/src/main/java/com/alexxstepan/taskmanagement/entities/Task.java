@@ -1,22 +1,43 @@
 package com.alexxstepan.taskmanagement.entities;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import com.alexxstepan.taskmanagement.PsqlPriorityConverter;
+import com.alexxstepan.taskmanagement.PsqlTaskStatusConverter;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.TypeDefs;
+
+import javax.persistence.*;
 
 @Entity
 @Table(schema = "tm", name = "TASKS")
+@TypeDefs({
+		@TypeDef(
+				name = "pgsql_status_enum",
+				typeClass = PsqlTaskStatusConverter.class
+		),
+		@TypeDef(
+				name = "pgsql_priority_enum",
+				typeClass = PsqlPriorityConverter.class
+		)
+})
 public class Task extends BaseEntity {
 
 	private Long parentTaskId;
 	private Long assigneeId;
-	private String status;
+	@Enumerated(EnumType.STRING)
+	@Column(columnDefinition = "tm.TASK_STATUS")
+	@Type( type = "pgsql_status_enum" )
+	private TaskStatus status;
 	private String title;
 	private String description;
-	private String priority;
+	@Enumerated(EnumType.STRING)
+	@Column(columnDefinition = "tm.PRIORITY")
+	@Type( type = "pgsql_priority_enum" )
+	private Priority priority;
 
 	public Task() {}
 
-	public Task(Long parentTaskId, Long assigneeId, String status, String title, String description, String priority) {
+	public Task(Long parentTaskId, Long assigneeId, TaskStatus status, String title, String description, Priority priority) {
 		this.parentTaskId = parentTaskId;
 		this.assigneeId = assigneeId;
 		this.status = status;
@@ -33,7 +54,7 @@ public class Task extends BaseEntity {
 		return assigneeId;
 	}
 
-	public String getStatus() {
+	public TaskStatus getStatus() {
 		return status;
 	}
 
@@ -45,7 +66,7 @@ public class Task extends BaseEntity {
 		return description;
 	}
 
-	public String getPriority() {
+	public Priority getPriority() {
 		return priority;
 	}
 
@@ -57,7 +78,7 @@ public class Task extends BaseEntity {
 		this.assigneeId = assigneeId;
 	}
 
-	public void setStatus(String status) {
+	public void setStatus(TaskStatus status) {
 		this.status = status;
 	}
 
@@ -69,7 +90,7 @@ public class Task extends BaseEntity {
 		this.description = description;
 	}
 
-	public void setPriority(String priority) {
+	public void setPriority(Priority priority) {
 		this.priority = priority;
 	}
 }
