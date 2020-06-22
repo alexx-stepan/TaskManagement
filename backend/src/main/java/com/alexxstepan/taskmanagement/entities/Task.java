@@ -34,16 +34,18 @@ public class Task extends BaseEntity {
 	@Column(columnDefinition = "tm.PRIORITY")
 	@Type( type = "pgsql_priority_enum" )
 	private Priority priority;
+	private int projectId;
 
 	public Task() {}
 
-	public Task(Long parentTaskId, Long assigneeId, TaskStatus status, String title, String description, Priority priority) {
+	public Task(Long parentTaskId, Long assigneeId, TaskStatus status, String title, String description, Priority priority, int projectId) {
 		this.parentTaskId = parentTaskId;
 		this.assigneeId = assigneeId;
 		this.status = status;
 		this.title = title;
 		this.description = description;
 		this.priority = priority;
+		this.projectId = projectId;
 	}
 
 	public Long getParentTaskId() {
@@ -70,6 +72,10 @@ public class Task extends BaseEntity {
 		return priority;
 	}
 
+	public int getProjectId() {
+		return projectId;
+	}
+
 	public void setParentTaskId(Long parentTaskId) {
 		this.parentTaskId = parentTaskId;
 	}
@@ -92,5 +98,9 @@ public class Task extends BaseEntity {
 
 	public void setPriority(Priority priority) {
 		this.priority = priority;
+	}
+
+	public void setProjectId(int projectId) {
+		this.projectId = projectId;
 	}
 }

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -17,5 +18,10 @@ public class EmployeeService {
 
 	public List<Employee> listEmployees() {
 		return IterableUtils.toList(repository.findAll());
+	}
+
+	public Optional<Employee> getEmployeeById(long employeeId) {
+
+		return repository.findById(employeeId);
 	}
 }

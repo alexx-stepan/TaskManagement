@@ -1,5 +1,9 @@
 CREATE SCHEMA IF NOT EXISTS tm AUTHORIZATION tm_user;
 
+CREATE TYPE tm.TASK_STATUS as ENUM ('New', 'In progress', 'Resolved', 'Closed', 'Reopened');
+
+CREATE TYPE tm.PRIORITY as ENUM ('Low', 'Medium', 'High', 'Immediate', 'Urgent');
+
 CREATE TABLE IF NOT EXISTS tm.EMPLOYEES (
     id serial PRIMARY KEY,
     first_name varchar(20) not null,
@@ -8,9 +12,10 @@ CREATE TABLE IF NOT EXISTS tm.EMPLOYEES (
     phone varchar(15) not null
 );
 
-CREATE TYPE tm.TASK_STATUS as ENUM ('New', 'In progress', 'Resolved', 'Closed', 'Reopened');
-
-CREATE TYPE tm.PRIORITY as ENUM ('Low', 'Medium', 'High', 'Immediate', 'Urgent');
+CREATE TABLE IF NOT EXISTS tm.PROJECTS (
+    id serial PRIMARY KEY,
+    name varchar(30) NOT NULL
+);
 
 CREATE TABLE IF NOT EXISTS tm.TASKS (
     id serial PRIMARY KEY,
@@ -20,12 +25,17 @@ CREATE TABLE IF NOT EXISTS tm.TASKS (
     title varchar(100),
     description varchar(500),
     priority tm.PRIORITY NOT NULL,
+    project_id int NOT NULL,
 
     CONSTRAINT FK_parent_task FOREIGN KEY (parent_task_id) REFERENCES tm.TASKS (id)
         ON DELETE RESTRICT
         ON UPDATE CASCADE,
 
     CONSTRAINT FK_assignee FOREIGN KEY (assignee_id) REFERENCES tm.EMPLOYEES (id)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE,
+
+    CONSTRAINT FK_project_id FOREIGN KEY (project_id) REFERENCES tm.PROJECTS (id)
         ON DELETE RESTRICT
         ON UPDATE CASCADE
 );
@@ -80,3 +90,13 @@ CREATE OR REPLACE FUNCTION tm.refresh_task_update_history() RETURNS TRIGGER
     $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER task_updates_audit AFTER UPDATE ON tm.TASKS FOR EACH ROW EXECUTE PROCEDURE tm.refresh_task_update_history();
+
+CREATE OR REPLACE FUNCTION tm.task_project_change_exception() RETURNS TRIGGER
+    AS $$
+    BEGIN
+        RAISE EXCEPTION 'It''s not allowed to change task''s project';
+    END
+    $$ LANGUAGE plpgsql;
+
+CREATE TRIGGER prevent_task_project_change BEFORE UPDATE OF project_id ON tm.TASKS
+    FOR EACH ROW EXECUTE PROCEDURE tm.task_project_change_exception();
