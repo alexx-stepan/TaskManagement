@@ -2,7 +2,6 @@ package com.alexxstepan.taskmanagement;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -11,14 +10,6 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
-/**
- * EnableJpaRepositories is to fix 'dataSource' creation error.
- *
- * Comment @SpringBootApplication(exclude = {WebMvcAutoConfiguration.class})
- * because without WebMvc configured we'll get error:
- * "No converter found for return value of type *endpoint return type*".
- */
-//@EntityScan("com.alexxstepan.taskmanagement.entities")
 @EnableJpaRepositories(basePackages = {"com.alexxstepan.taskmanagement.dao.repositories"})
 @SpringBootApplication
 public class Application {

@@ -30,7 +30,11 @@ public class TaskController {
 
 	@RequestMapping("/{id}")
 	public Task get(@PathVariable long id) {
-		return taskService.getById(id);
+		Optional<Task> task = taskService.getById(id);
+
+		return task.orElseThrow(() -> {
+			return new ResponseStatusException(HttpStatus.BAD_REQUEST, "There is no task with ID " + id);
+		});
 	}
 
 	@RequestMapping(method = RequestMethod.PUT)
