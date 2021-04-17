@@ -5,13 +5,21 @@ services:
     build:
       context: db
       dockerfile: Dockerfile
-    ports:
-      - 5432:5432
+    networks:
+      - tm_network
+    expose:
+      - "5432"
+#    ports:
+#      - 5432:5432
   server:
     container_name: tm_server
     build:
       context: server
       dockerfile: Dockerfile
+    expose:
+      - "8080"
+    networks:
+      - tm_network
     depends_on:
       - db
   web:
@@ -20,4 +28,10 @@ services:
       context: ../TMFrontend
       dockerfile: Dockerfile
     ports:
-      - 8080:4200
+      - 8090:4200
+    networks:
+      - tm_network
+
+networks:
+  tm_network:
+    driver: bridge

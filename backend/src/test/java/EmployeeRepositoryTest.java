@@ -6,8 +6,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
@@ -15,9 +17,11 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
-@RunWith(SpringRunner.class)
-@DataJpaTest
-@ContextConfiguration(classes = Application.class)
+//@RunWith(SpringRunner.class)
+//@Sql(scripts = "classpath:1schema.sql")
+//@DataJpaTest
+//@ContextConfiguration(classes = Application.class)
+//@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class EmployeeRepositoryTest {
 
 	@Autowired
@@ -29,7 +33,7 @@ public class EmployeeRepositoryTest {
 	@After
 	public void cleanUp() {}
 
-	@Test
+//	@Test
 	public void testFindByFirstName() {
 		List<Employee> employees = new ArrayList<Employee>() {{
 			add(new Employee("first1", "last1", "1email.gmail.com", "1234567890"));

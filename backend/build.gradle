@@ -31,7 +31,7 @@ dependencies {
     implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
 
     testImplementation('org.springframework.boot:spring-boot-starter-test')
-    testImplementation 'org.postgresql:postgresql'
+    testImplementation 'com.h2database:h2'
 
 }
 
